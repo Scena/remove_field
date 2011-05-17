@@ -1,0 +1,5 @@
+name = Remove Field
+description = Utility functions for removing a field.
+package = Pearson Foundation
+core = 7.x
+files[] = remove_field.module

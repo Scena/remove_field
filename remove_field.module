@@ -1,0 +1,61 @@
+<?php
+// $Id$
+// $Id$
+
+/**
+ * @file
+ * TODO: Enter file description here.
+ */
+
+function get_remove_field_button_array($callback, $name_prefix, $delta) {
+	return array(
+    '#type' => 'button',
+    '#value' => t('Remove item'),
+    '#weight' => 10,
+    '#input' => TRUE,
+    '#name' => $name_prefix . '-' . $delta,
+    '#button_type' => 'submit form-remove',
+    '#executes_submit_callback' => TRUE,
+    '#limit_validation_errors' => TRUE,
+    '#process' => array('ajax_process_form'),
+    '#theme_wrappers' => array('button'),
+    '#prefix' => '<div style="float:right;margin-top:5%;">',
+    '#suffix' => '</div>',
+    '#ajax' => array(
+      'callback' => $callback,
+			// TODO: conflicts? add wrapper name param? use $name_prefix?
+      'wrapper' => 'row-' . $delta,
+      'effect' => 'fade',
+      'method' => 'remove',
+    ),
+  );
+}
+
+
+function remove_field_ajax_handler($form, $form_state, $field_name) {
+//dd($form, 'remove_field_ajax_handler -- $form');
+//dd($form_state, 'remove_field_ajax_handler -- $form_state');
+
+  $button = $form_state['clicked_button'];
+  $element = drupal_array_get_nested_value($form, array_slice($button['#array_parents'], 0, -1));
+  $delta = $element['#delta'];
+  $langcode = $element['#language'];
+	foreach($form_state['node'] as $name=>$value) {
+		if ($name == $field_name) {
+			unset($value[$langcode][$delta]);
+			break;
+		}
+	}
+dd($form_state['node'], 'remove_field_ajax_handler -- $form_state[\'node\']');
+  unset($form[$field_name][$langcode][$delta]);
+  node_save($form_state['node']);
+  $form_state['rebuild'] = TRUE;
+  //drupal_rebuild_form($form['#form_id'], $form_state);
+//dd($form[$field_name], 'remove_field_ajax_handler -- $form[$field_name]');
+//dd($form_state['node'], 'remove_field_ajax_handler -- $form_state[\'node\']');
+  $commands = array();
+	// TODO: conflicts? 
+  $commands[] = ajax_command_remove('tr.draggable:nth-child(' . ($delta + 1) . ')');
+  $commands[] = ajax_command_restripe('#' . str_replace('_', '-', $field_name) . '-values');
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
