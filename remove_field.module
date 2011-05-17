@@ -46,7 +46,6 @@ function remove_field_ajax_handler($form, $form_state, $field_name) {
 			break;
 		}
 	}
-dd($form_state['node'], 'remove_field_ajax_handler -- $form_state[\'node\']');
   unset($form[$field_name][$langcode][$delta]);
   node_save($form_state['node']);
   $form_state['rebuild'] = TRUE;
